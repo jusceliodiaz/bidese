@@ -97,6 +97,10 @@ function track(event, props = {}) {
   try { navigator.sendBeacon?.('/api/track', JSON.stringify(payload)); } catch(_) {}
 }
 
+// Resolvida quando a primeira capa é desenhada — libera os preloads pesados
+let resolveFirstPaint;
+const firstPaint = new Promise(r => { resolveFirstPaint = r; });
+
 let dwellStart = Date.now();
 let dwellScene = 'aerial';
 
@@ -116,10 +120,12 @@ window.addEventListener('load', () => {
   const initial = sceneFromHash();
   startScene(initial);
   // Kick off preload for the second scene's neighbors so the second transition is also instant
+  // (depois da primeira capa desenhada)
   const ids = CONFIG.timeline.map(t => t.id);
   const idx = ids.indexOf(initial);
   const next = ids[idx + 1];
-  if (next) Object.values(CONFIG.transitions[next] || {}).filter(Boolean).forEach(id => preload(id));
+  if (next) firstPaint.then(() =>
+    Object.values(CONFIG.transitions[next] || {}).filter(Boolean).forEach(id => preload(id)));
   initCTA();
   initPoiCard();
   initDragHint();
@@ -214,14 +220,21 @@ function startScene(sceneId) {
   syncHash(sceneId);
   renderPOIs(scene.pois);
 
-  // Always preload adjacent sequences in the background, regardless of scene type
-  Object.values(CONFIG.transitions[sceneId] || {}).filter(Boolean).forEach(id => preload(id));
+  // Sequências vizinhas só depois da capa na tela: centenas de frames em paralelo
+  // roubavam a banda da capa e a tela ficava preta em conexões comuns
+  const preloadNeighbors = () =>
+    Object.values(CONFIG.transitions[sceneId] || {}).filter(Boolean).forEach(id => preload(id));
 
   // Cover image mode — draw to canvas and keep it visible
   if (scene.cover) {
-    showPoster(MOBILE && scene.cover_m ? scene.cover_m : scene.cover);
+    showPoster(MOBILE && scene.cover_m ? scene.cover_m : scene.cover, () => {
+      resolveFirstPaint();
+      preloadNeighbors();
+    });
     return;
   }
+
+  preloadNeighbors();
 
   // Video mode (fallback)
 
