@@ -24,11 +24,13 @@
 ...
 <script src="scenes-bidesse-main.js"></script>
 <script src="script-bidesse-main.js"></script>
+<script src="fp-intelligence.js"></script>
 ```
 
 | Arquivo | Papel |
 |---|---|
 | `ui-compose.css` | **Design system do Compose** (vidro escuro grafite, dock em vidro frio, verde `#6ebe6e` como único destaque, branco = pressionado). Carregado depois do `<style>` inline — só pele, sem layout |
+| `fp-intelligence.js` | **FirstPerson Adaptive Intelligence** — catálogo semântico, eventos, perfil explicável, sugestões, missões, favoritos e contexto no lead. Ver [fp-intelligence.md](fp-intelligence.md) |
 | `styles.css` | Reset, cursor customizado, `#stage`/`#track`/`#loader`, POI layer base — compartilhado com cityexplorer |
 | `scenes-bidesse-main.js` | `CONFIG` global: timeline de cenas, POIs por cena, sequências de frames, mapa de transições |
 | `script-bidesse-main.js` | Motor da experiência: scene player, sequence loader, POI cards, tour automático, track/nav, cursor, analytics |

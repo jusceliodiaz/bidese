@@ -209,6 +209,7 @@ function startScene(sceneId) {
 
   markDwell(sceneId);
   currentScene = sceneId;
+  window.FPAI?.track('scene_entered', 'scene_' + sceneId);
   setActive(sceneId);
   syncHash(sceneId);
   renderPOIs(scene.pois);
@@ -446,6 +447,7 @@ function initPoiCard() {
 function showPoiCard(poi, dotEl) {
   if (!poiCardEl) return;
   track('poi_card_open', { scene: currentScene, label: poi.label });
+  window.FPAI?.track('hotspot_opened', 'poi_' + poi.label);
 
   const catText = poi.subcategory ? `${poi.category} · ${poi.subcategory}` : poi.category;
 
@@ -834,6 +836,8 @@ function initCTA() {
       const data = Object.fromEntries(new FormData(e.target));
       data.project = LEAD.project;
       data.scene   = currentScene;
+      // contexto do percurso FirstPerson — só se a pessoa deixou a caixa marcada
+      if (window.FPAI) Object.assign(data, FPAI.leadContext());
       try {
         await fetch(LEAD.endpoint, {
           method:  'POST',
@@ -841,7 +845,9 @@ function initCTA() {
           body:    JSON.stringify(data),
         });
       } catch (_) {}
-      track('lead_submit', data);
+      // analytics sem dados de contato (nome, e-mail, telefone ficam só no lead)
+      track('lead_submit', { scene: currentScene, tipologia: data.tipologia || '' });
+      window.FPAI?.track('contact_requested', null, { scene: currentScene });
       e.target.hidden = true;
       const ok = document.getElementById('lead-ok');
       if (ok) ok.hidden = false;
