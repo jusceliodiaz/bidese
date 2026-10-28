@@ -1,0 +1,988 @@
+/* Lemme — camada de UI no design system do Compose (Amalfi):
+   fundo quase preto, DM Sans, vidro escuro (grafite quente) para janelas, vidro azul-acinzentado
+   para o dock e as pílulas, verde-folha (#6ebe6e) como único destaque, tinta escura sobre o verde,
+   branco para o estado pressionado. A imagem nunca recebe filtro: a cor do render é a cor do produto.
+
+   Carregado DEPOIS do <style> inline de bidese.html: mesmos seletores, então esta camada vence.
+   Só pele (cor, vidro, borda, raio, tipografia) — posição e comportamento ficam no CSS original. */
+
+:root {
+  color-scheme: dark;
+  --bg: #0d0d0b;
+  --ink: #f3efe6;
+  --ink-2: rgba(243, 239, 230, 0.76);
+  --ink-3: rgba(243, 239, 230, 0.58);
+  --on-ink: #14130f;
+  --accent: #6ebe6e;
+  --accent-hi: #82cc82;
+  --warn: #f6a26f;
+  --danger: #e5736b;
+
+  /* vidro escuro (janelas) — "--glass" já é usado pelo styles.css compartilhado */
+  --glass-warm: rgba(20, 19, 15, 0.55);
+  --glass-deep: rgba(20, 19, 15, 0.74);
+  --glass-solid: #14130f;
+  --glass-line: rgba(255, 255, 255, 0.16);
+  --blur: blur(16px) saturate(1.2);
+  /* vidro frio (dock / pílulas) */
+  --glass-cool: rgba(120, 130, 140, 0.45);
+  --blur-cool: blur(14px);
+
+  --surface-2: rgba(255, 255, 255, 0.06);
+  --surface-3: rgba(255, 255, 255, 0.12);
+  --line: rgba(255, 255, 255, 0.09);
+  --line-2: rgba(255, 255, 255, 0.18);
+  --shadow-ds: 0 0 0 0.5px rgba(255, 255, 255, 0.08) inset, 0 20px 60px rgba(0, 0, 0, 0.35);
+  --tip-bg: rgba(20, 20, 20, 0.88);
+
+  --font: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+body {
+  color: var(--ink);
+  font-family: var(--font);
+  font-feature-settings: "tnum" 1;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------ HUD: menu + dica */
+
+#top-bar {
+  padding: 3px;
+  border: 1px solid var(--glass-line);
+  border-radius: 999px;
+  background: var(--glass-warm);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-ds);
+}
+
+#menu-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #fff;
+  transition: background-color 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+#menu-toggle:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+#menu-toggle.active,
+#menu-toggle.active:hover {
+  background: #fff;
+  color: var(--on-ink);
+}
+
+.drag-hint {
+  border: 1px solid var(--glass-line);
+  background: var(--glass-cool);
+  -webkit-backdrop-filter: var(--blur-cool);
+  backdrop-filter: var(--blur-cool);
+  color: #fff;
+}
+
+#scene-tag {
+  border: 1px solid var(--glass-line);
+  background: var(--glass-deep);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-ds);
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------- dock (o #track do Amalfi) */
+
+#cta-dock {
+  padding: 8px;
+  gap: 6px;
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-lg);
+  background: var(--glass-cool);
+  -webkit-backdrop-filter: var(--blur-cool);
+  backdrop-filter: var(--blur-cool);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+#cta-visit,
+#cta-overlay,
+#cta-overlay.ov-off,
+#cta-surround {
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.88);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition:
+    padding 0.55s var(--spring),
+    gap 0.55s var(--spring),
+    background-color 0.22s var(--ease),
+    border-color 0.22s var(--ease),
+    color 0.22s var(--ease);
+}
+
+#cta-visit:hover,
+#cta-overlay:hover,
+#cta-surround:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+/* ativo = verde com tinta escura */
+#cta-visit.active,
+#cta-visit.active:hover,
+#cta-surround.active,
+#cta-surround.active:hover,
+#cta-overlay:not(.ov-off),
+#cta-overlay:not(.ov-off):hover {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--on-ink);
+  font-weight: 600;
+}
+
+#cta-visit:active,
+#cta-overlay:active,
+#cta-surround:active {
+  transform: scale(0.97);
+}
+
+/* engrenagem: botão redondo de ferramenta (o seletor dia/noite do Amalfi) */
+#floor-cta {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--glass-line);
+  background: var(--glass-warm);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-ds);
+  color: #fff;
+  transition: background-color 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+#floor-cta:hover {
+  background: rgba(20, 19, 15, 0.74);
+  color: #fff;
+}
+
+#floor-cta.active,
+#floor-cta.active:hover {
+  border-color: transparent;
+  background: #fff;
+  color: var(--on-ink);
+}
+
+/* editor de overlays (ferramenta interna) no mesmo vidro escuro */
+#ov-edit-btn {
+  border: 1px solid var(--glass-line);
+  background: var(--glass-deep);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-ds);
+  color: var(--ink-2);
+}
+
+#ov-edit-btn.active {
+  border-color: var(--accent);
+  background: rgba(110, 190, 110, 0.18);
+  color: var(--ink);
+}
+
+#loader span {
+  background: var(--ink);
+}
+
+/* ------------------------------------------------------------------- POIs */
+
+/* rótulo do POI: a etiqueta escura do Amalfi */
+.poi-name {
+  border: 1px solid var(--glass-line);
+  background: var(--glass-deep);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.poi-btn {
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2), 0 2px 14px rgba(0, 0, 0, 0.22);
+}
+
+.poi-btn::before,
+.poi-btn::after {
+  background: var(--on-ink);
+}
+
+/* card do POI = info card do Amalfi */
+#poi-card {
+  border: 1px solid var(--glass-line);
+  background: var(--glass-deep);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-ds);
+  color: var(--ink);
+}
+
+.poi-card-close,
+#map-modal-close,
+#lead-close,
+#lemme-panel-close {
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.poi-card-close:hover,
+#map-modal-close:hover,
+#lead-close:hover,
+#lemme-panel-close:hover {
+  background: var(--surface-3);
+}
+
+.poi-card-close:active,
+#map-modal-close:active,
+#lead-close:active,
+#lemme-panel-close:active {
+  transform: scale(0.94);
+}
+
+.poi-card-cat {
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+}
+
+.poi-card-title {
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.poi-card-desc {
+  color: var(--ink-2);
+}
+
+.poi-card-times {
+  border-top: 1px solid var(--line);
+  color: var(--ink-3);
+}
+
+/* ------------------------------------------------------------ modal Entorno */
+
+#map-modal-box {
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-lg);
+  background: var(--glass-deep);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-ds);
+  color: var(--ink);
+}
+
+#map-modal-title {
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+/* filtros = chips do Compose */
+.map-filter {
+  border: 0;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-weight: 500;
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.map-filter:hover:not(.active) {
+  border-color: transparent;
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.map-filter.active {
+  background: #fff;
+  color: var(--on-ink);
+}
+
+#mini-map {
+  background: #1b1a16;
+}
+
+#map-container::after {
+  background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(20, 19, 15, 0.6) 100%);
+}
+
+.street {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.ring {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.ring-label {
+  color: var(--ink-3);
+}
+
+.center-dot,
+.center-label {
+  background: #fff;
+  color: var(--on-ink);
+}
+
+.pin-dot {
+  border-color: rgba(20, 19, 15, 0.9);
+}
+
+.pin-pop {
+  border: 1px solid var(--glass-line);
+  background: var(--glass-deep);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
+}
+
+.pp-name {
+  color: var(--ink);
+}
+
+.pp-time {
+  color: var(--ink-3);
+}
+
+#map-poi-list {
+  border-top: 1px solid var(--line);
+}
+
+.map-list-item {
+  border-bottom: 1px solid var(--line);
+}
+
+.map-list-item:hover {
+  background: var(--surface-2);
+}
+
+.map-list-name {
+  color: var(--ink);
+}
+
+.map-list-cat,
+.map-list-time {
+  color: var(--ink-3);
+}
+
+@media (max-width: 600px) {
+  #map-modal {
+    background: rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* --------------------------------------------------------- overlays de andar */
+
+.floor-poly {
+  fill: rgba(255, 255, 255, 0.06);
+  stroke: rgba(255, 255, 255, 0.5);
+}
+
+.floor-poly:hover {
+  fill: rgba(255, 255, 255, 0.16);
+}
+
+.floor-poly.selected {
+  fill: rgba(255, 255, 255, 0.24);
+  stroke: #fff;
+}
+
+.floor-poly.avail-disponivel {
+  fill: rgba(110, 190, 110, 0.3);
+  stroke: var(--accent);
+}
+
+.floor-poly.avail-disponivel:hover {
+  fill: rgba(110, 190, 110, 0.45);
+}
+
+.floor-poly.avail-reservado {
+  fill: rgba(246, 162, 111, 0.3);
+  stroke: var(--warn);
+}
+
+.floor-poly.avail-reservado:hover {
+  fill: rgba(246, 162, 111, 0.45);
+}
+
+.floor-poly.avail-vendido {
+  fill: rgba(229, 115, 107, 0.3);
+  stroke: var(--danger);
+}
+
+.floor-poly.avail-vendido:hover {
+  fill: rgba(229, 115, 107, 0.45);
+}
+
+.floor-label-text {
+  fill: rgba(255, 255, 255, 0.85);
+}
+
+/* ------------------------------------------- painel do andar (gaveta direita) */
+
+#floor-panel-backdrop.open {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+#floor-panel {
+  border-left: 1px solid var(--glass-line);
+  background: var(--glass-deep);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-ds);
+  color: var(--ink);
+}
+
+#fl-hero-overlay {
+  background: linear-gradient(to top, rgba(20, 19, 15, 0.95) 0%, rgba(20, 19, 15, 0.35) 45%, rgba(20, 19, 15, 0.05) 100%);
+}
+
+#floor-panel-close {
+  border: 1px solid var(--line-2);
+  background: rgba(20, 19, 15, 0.55);
+  color: #fff;
+}
+
+#floor-panel-close:hover {
+  background: rgba(20, 19, 15, 0.8);
+}
+
+.fl-badge {
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.fl-badge.avail-disponivel {
+  background: var(--accent);
+  color: var(--on-ink);
+}
+
+.fl-badge.avail-reservado {
+  background: var(--warn);
+  color: var(--on-ink);
+}
+
+.fl-badge.avail-vendido {
+  background: var(--danger);
+  color: var(--on-ink);
+}
+
+#floor-panel-tag {
+  color: var(--accent);
+}
+
+#floor-panel-name {
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+#fl-hero-tipo {
+  color: var(--ink-2);
+}
+
+#fl-price {
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+#fl-area-badge {
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+
+.fp-stat-label,
+.fp-block-title {
+  color: var(--ink-3);
+  letter-spacing: 0.16em;
+}
+
+.fp-metric {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+.fp-metric svg {
+  color: var(--accent);
+}
+
+.fp-metric-val {
+  color: var(--ink);
+}
+
+.fp-metric-lbl {
+  color: var(--ink-3);
+}
+
+.fp-destaques li {
+  color: var(--ink-2);
+}
+
+.fp-destaques li::before {
+  background: rgba(110, 190, 110, 0.16)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236ebe6e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E")
+    center / 10px no-repeat;
+}
+
+#floor-panel-desc {
+  color: var(--ink-2);
+}
+
+/* botões da gaveta: secundário em superfície; WhatsApp = primário verde */
+.fp-panel-btn {
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-weight: 600;
+  transition: background-color 0.2s var(--ease), transform 0.15s var(--ease);
+}
+
+.fp-panel-btn:hover {
+  background: var(--surface-3);
+}
+
+.fp-panel-btn--wa {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--on-ink);
+}
+
+.fp-panel-btn--wa:hover {
+  background: var(--accent-hi);
+}
+
+.fp-panel-btn:active {
+  transform: scale(0.98);
+}
+
+/* no celular a gaveta ocupa a tela: o menu sai da frente do selo de status */
+@media (max-width: 600px) {
+  body:has(#floor-panel.open) #top-bar {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* ------------------------------------------------------- painel de plantas */
+
+#fp-toggle,
+#fp-panel,
+#filter-panel {
+  border: 1px solid var(--glass-line);
+  background: var(--glass-deep);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-ds);
+  color: var(--ink);
+}
+
+#fp-toggle:hover {
+  background: rgba(20, 19, 15, 0.9);
+}
+
+.fp-type-btn,
+.fi-chip {
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-weight: 500;
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.fp-type-btn:hover,
+.fi-chip:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.fp-type-btn.active,
+.fi-chip.active {
+  border-color: transparent;
+  background: #fff;
+  color: var(--on-ink);
+}
+
+.fp-img-wrap {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+.fp-img-placeholder,
+.fp-info-label {
+  color: var(--ink-3);
+}
+
+.fp-info-val {
+  color: var(--ink);
+}
+
+.fp-btn {
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.fp-btn:hover {
+  background: var(--surface-3);
+}
+
+.fp-btn.primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--on-ink);
+}
+
+.fp-btn.primary:hover {
+  background: var(--accent-hi);
+}
+
+/* ----------------------------------------------------------------- filtros */
+
+.fi-title {
+  color: var(--ink);
+}
+
+.fi-group-label {
+  color: var(--ink-3);
+  letter-spacing: 0.16em;
+}
+
+#fi-count,
+.fi-range-vals {
+  color: var(--ink-3);
+}
+
+#fi-count.none {
+  color: var(--danger);
+}
+
+/* disponibilidade ativa: anel na cor do status */
+.fi-chip.avail-disponivel.active {
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+  color: var(--ink);
+}
+
+.fi-chip.avail-reservado.active {
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1.5px var(--warn);
+  color: var(--ink);
+}
+
+.fi-chip.avail-vendido.active {
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1.5px var(--danger);
+  color: var(--ink);
+}
+
+/* slider do Compose: trilho fino, polegar branco */
+input[type="range"].fi-slider {
+  height: 3px;
+  border-radius: 3px;
+  background: var(--line-2);
+  accent-color: var(--accent);
+}
+
+input[type="range"].fi-slider::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+input[type="range"].fi-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+input[type="range"].fi-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--accent), 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.fi-clear {
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--ink-2);
+}
+
+.fi-clear:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+/* -------------------------------------------------------- Agendar visita */
+
+#lead-modal {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+#lead-card {
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-lg);
+  background: var(--glass-deep);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-ds);
+  color: var(--ink);
+}
+
+#lead-card h3 {
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+#lead-card > p {
+  color: var(--ink-2);
+  opacity: 1;
+}
+
+.lead-address {
+  color: var(--ink-3) !important;
+}
+
+#lead-form input,
+.lead-select {
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--ink);
+  transition: border-color 0.15s var(--ease), background-color 0.15s var(--ease);
+}
+
+#lead-form input::placeholder {
+  color: var(--ink-3);
+}
+
+#lead-form input:focus,
+.lead-select:focus {
+  border-color: var(--accent);
+  background: var(--surface-3);
+  outline: none;
+}
+
+.lead-select option {
+  background: var(--glass-solid);
+  color: var(--ink);
+}
+
+#lead-form button {
+  min-height: 44px;
+  border-radius: var(--r-md);
+  background: var(--accent);
+  color: var(--on-ink);
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.2s var(--ease), transform 0.15s var(--ease);
+}
+
+#lead-form button:hover {
+  background: var(--accent-hi);
+}
+
+#lead-form button:active {
+  transform: scale(0.98);
+}
+
+#lead-ok {
+  color: var(--accent);
+}
+
+/* ------------------------------------------ painel "Projeto Lemme" (menu) */
+
+#lemme-panel-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+#lemme-panel {
+  border-right: 1px solid var(--glass-line);
+  background: var(--glass-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  color: var(--ink);
+}
+
+#lemme-panel-tag,
+.lm-kicker,
+.lm-tipo-faixa,
+.lm-dif-cat,
+.lm-card-sub {
+  color: var(--accent);
+}
+
+#lemme-panel-title,
+.lm-h2,
+.lm-tipo-head,
+.lm-card-title,
+.lm-stat-val {
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+#lemme-nav,
+#lemme-panel-footer {
+  border-color: var(--line);
+}
+
+.lm-nav-chip,
+.lm-chip,
+.lm-social a {
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.lm-nav-chip:hover,
+.lm-social a:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.lm-nav-chip.active {
+  border-color: transparent;
+  background: #fff;
+  color: var(--on-ink);
+}
+
+.lm-section {
+  border-bottom-color: var(--line);
+}
+
+.lm-p,
+.lm-dif-list li {
+  color: var(--ink-2);
+}
+
+.lm-p strong,
+.lm-mob figcaption strong {
+  color: var(--ink);
+}
+
+.lm-img {
+  background: var(--surface-2);
+}
+
+.lm-fig figcaption,
+.lm-stat-lbl,
+.lm-mob figcaption span,
+.lm-legal {
+  color: var(--ink-3);
+}
+
+.lm-stat,
+.lm-card,
+.lm-tipo-item {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+
+.lm-dif-list li::before {
+  background: var(--accent);
+}
+
+.lm-award,
+.lm-obra-badge {
+  border: 1px solid rgba(110, 190, 110, 0.35);
+  background: rgba(110, 190, 110, 0.1);
+  color: var(--accent);
+}
+
+.lm-award:hover {
+  background: rgba(110, 190, 110, 0.18);
+}
+
+.lm-tipo-wa {
+  border: 1px solid rgba(110, 190, 110, 0.4);
+  background: rgba(110, 190, 110, 0.1);
+  color: var(--accent);
+}
+
+.lm-tipo-wa:hover {
+  background: rgba(110, 190, 110, 0.2);
+}
+
+/* CTAs: Agendar = primário verde; WhatsApp e demais = secundários */
+.lm-cta {
+  border-radius: var(--r-md);
+  font-weight: 600;
+  transition: background-color 0.2s var(--ease), color 0.2s var(--ease), transform 0.15s var(--ease);
+}
+
+.lm-cta:active {
+  transform: scale(0.98);
+}
+
+.lm-cta--gold {
+  border: 1px solid transparent;
+  background: var(--accent);
+  color: var(--on-ink);
+}
+
+.lm-cta--gold:hover {
+  background: var(--accent-hi);
+}
+
+.lm-cta--wa,
+.lm-cta--ghost {
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.lm-cta--wa:hover,
+.lm-cta--ghost:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.lm-cta--wa svg {
+  color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

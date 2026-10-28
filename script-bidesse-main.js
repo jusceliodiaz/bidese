@@ -122,6 +122,7 @@ window.addEventListener('load', () => {
   if (next) Object.values(CONFIG.transitions[next] || {}).filter(Boolean).forEach(id => preload(id));
   initCTA();
   initPoiCard();
+  initDragHint();
 });
 
 // Smart resize: ignores address-bar height jitter on mobile (< 120px height delta)
@@ -433,7 +434,6 @@ function drawCover(img) {
 
 const SVG_CAR_POI  = `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.92 6C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-6zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>`;
 const SVG_WALK_POI = `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L7.3 6.8v4.7h2V8.1l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg>`;
-const SVG_GLOBE    = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`;
 
 let poiCardEl = null;
 
@@ -477,7 +477,6 @@ function showPoiCard(poi, dotEl) {
         <div class="poi-card-cat">${catText}</div>
         <div class="poi-card-title">${poi.title}</div>
         <p class="poi-card-desc">${poi.description}</p>
-        ${poi.pano360 ? `<button class="poi-card-360" onclick="openPanoModal('${poi.pano360}','${poi.title}')">${SVG_GLOBE} VIEW 360°</button>` : ''}
       </div>`;
   }
 
@@ -676,10 +675,29 @@ function stopTour() {
 
 // ─── Keyboard navigation (← →) ───────────────────────────────────────────────
 
+// ─── Aviso "Arraste para navegar" ─────────────────────────────────────────────
+// Fica oculto; aparece por DRAG_HINT_SHOW_MS a cada DRAG_HINT_EVERY_MS,
+// pulando a vez se houver modal/painel aberto ou transição em andamento.
+
+const DRAG_HINT_EVERY_MS = 30000;
+const DRAG_HINT_SHOW_MS  = 4000;
+
+function initDragHint() {
+  const hint = document.getElementById('drag-hint');
+  if (!hint) return;
+  let hideTimer;
+  setInterval(() => {
+    if (busy || anyOverlayOpen()) return;
+    hint.classList.add('show');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => hint.classList.remove('show'), DRAG_HINT_SHOW_MS);
+  }, DRAG_HINT_EVERY_MS);
+}
+
 function anyOverlayOpen() {
   const openCls = id => document.getElementById(id)?.classList.contains('open');
   const leadOpen = (() => { const m = document.getElementById('lead-modal'); return m && !m.hidden; })();
-  return openCls('map-modal') || openCls('pano-modal') || openCls('floor-panel') || openCls('lemme-panel') || leadOpen;
+  return openCls('map-modal') || openCls('floor-panel') || openCls('lemme-panel') || leadOpen;
 }
 
 document.addEventListener('keydown', e => {
