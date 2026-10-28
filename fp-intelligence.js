@@ -117,9 +117,8 @@
     bairro: { title: "O bairro Água Verde", f: { localizacao: 1 } },
   };
 
-  const HOTSPOTS = {
-    PADARIA: { f: { localizacao: 0.8 } },
-  };
+  // POIs da cena (label → features); hoje nenhuma cena tem POI
+  const HOTSPOTS = {};
 
   let CATALOG = null; // Map id → item
 

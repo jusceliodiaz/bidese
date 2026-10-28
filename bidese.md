@@ -85,7 +85,7 @@ Define `const CONFIG = { timeline, scenes, sequences, transitions }` (global, se
 | `card-simple` | `label, x, y, accent, category, subcategory, title, description, car, walk` | Infraestrutura/localização — card sem imagem, com tempos de carro/caminhada |
 | `card-complex` | `label, x, y, category, subcategory, title, description, image` | POIs com imagem (o visualizador 360° foi removido) |
 
-Atualmente apenas a cena `aerial` tem POIs (`PADARIA`); as demais (`pool`, `garden`, `living`, `kitchen`, `room6`) têm `pois: []`.
+Atualmente nenhuma cena tem POIs (`pois: []` em todas); a estrutura continua disponível para novos pontos.
 
 ### `CONFIG.sequences`
 9 sequências de frames (`aerial-to-pool`, `pool-to-aerial`, `pool-to-garden`, `garden-to-pool`, `garden-to-living`, `living-to-garden`, `living-to-kitchen`, `kitchen-to-living`, `kitchen-to-room6`, `room6-to-kitchen`):

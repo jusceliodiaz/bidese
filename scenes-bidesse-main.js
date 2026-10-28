@@ -12,22 +12,7 @@ const CONFIG = {
     aerial: {
       cover: "images/bidesse/COVER_B1.jpg",
       cover_m: "images/bidesse/seq_arch_m/COVER_B1.jpg",
-      pois: [
-        {
-          type: "card-simple",
-          label: "PADARIA",
-          x: 51.0,
-          y: 26.1,
-          accent: "#6ebe6e",
-          category: "INFRASTRUCTURE",
-          subcategory: "BASEMENT",
-          title: "PADARIA",
-          description:
-            "Padaria com produtos frescos e atendimento personalizado.",
-          car: 2,
-          walk: 3,
-        },
-      ],
+      pois: [],
     },
     pool: {
       cover: "images/bidesse/COVER_B2.jpg",
