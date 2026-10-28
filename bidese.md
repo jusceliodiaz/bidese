@@ -1,6 +1,6 @@
 # `bidese.html` — Edifício Lemme, Tour Virtual 3D
 
-> Demo de experiência imobiliária archviz para o **Edifício Lemme** (Curitiba). Página standalone, sem dependência de `index.html` além do link de volta.
+> Demo de experiência imobiliária archviz para o **Edifício Lemme** (Curitiba). Página standalone, sem dependência de `index.html`.
 
 ---
 
@@ -9,9 +9,8 @@
 - **Título:** `Edifício Lemme | Tour Virtual 3D | Factory Studio`
 - **URL de produção:** `https://www.factorystudio.works/bidese.html`
 - **SEO:** `<meta name="robots" content="noindex, nofollow">` — página de demo, não indexada
-- **Fontes:** DM Sans (300–600) + Silkscreen (usada no crédito `#track-credit`)
+- **Fontes:** DM Sans (300–600)
 - **CSS:** 100% inline em `<style>` no próprio `bidese.html` + `styles.css` (compartilhado com `cityexplorer.html`)
-- **Back button:** `#top-back` dentro do `#top-bar`, `href="index.html"`
 - **GA:** `G-3K51DFTX3J`, lazy-loaded via `window.addEventListener('load', ...)`
 
 ---
@@ -31,7 +30,7 @@
 | `styles.css` | Reset, cursor customizado, `#stage`/`#track`/`#loader`, POI layer base — compartilhado com cityexplorer |
 | `scenes-bidesse-main.js` | `CONFIG` global: timeline de cenas, POIs por cena, sequências de frames, mapa de transições |
 | `images/bidesse/pano_living2_b64.js` | Exporta `window._PANO_LIVING2` (data URL base64 da imagem 360° do living) — workaround para `file://` |
-| `script-bidesse-main.js` | Motor da experiência: scene player, sequence loader, POI cards, tour automático, track/nav, cursor, bot popup, analytics |
+| `script-bidesse-main.js` | Motor da experiência: scene player, sequence loader, POI cards, tour automático, track/nav, cursor, analytics |
 | *(inline em `bidese.html`)* | Filtros de unidade, mapa de entorno (Leaflet-like SVG), modal panorama 360° (Three.js), overlays de andar (SVG sobre imagem aérea), painel de plantas, editor de overlays (dev tool) |
 
 Não existe arquivo `bidesse_video.html`, `scenes-bidesse.js` ou `script-bidesse.js` — foram deletados e substituídos por `scenes-bidesse-main.js` / `script-bidesse-main.js`. Não referenciar esses nomes antigos.
@@ -42,7 +41,7 @@ Não existe arquivo `bidesse_video.html`, `scenes-bidesse.js` ou `script-bidesse
 
 ```
 body
-├── #top-bar                 → back link + "LEMME · BIDESE" + botão filtros (mobile/desktop topo)
+├── #top-bar                 → "LEMME · BIDESE" + botão filtros (mobile/desktop topo)
 ├── #cursor / #ring          → cursor customizado (desktop)
 ├── #noise                   → grain overlay
 ├── #stage
@@ -51,19 +50,18 @@ body
 │   └── #poi-layer           → POIs dinâmicos da cena atual
 ├── #scene-tag                → label da cena atual
 ├── #track                    → nav inferior (pill glass, arrows + label)
-├── #track-credit             → "powered by Factory Studio" (link factorystudio.works)
 ├── #filter-panel             → filtros de unidade (disponibilidade, quartos, banheiros, área)
 ├── #floor-svg                → overlay SVG de polígonos por andar sobre a imagem aérea
+├── #floor-cta                → engrenagem no canto inferior direito (liga/desliga overlays + seleção na Vista 1)
 ├── #floor-panel-backdrop / #floor-panel   → drawer lateral com dados do andar clicado
 ├── #ov-edit-btn / #ov-export-panel        → editor de overlays (ferramenta interna, arraste handles)
 ├── #fp-toggle / #fp-panel    → painel de plantas baixas (por tipologia)
 ├── #loader                   → 3 spans animados
 ├── #debug-hud                → HUD de debug (hidden por padrão)
-├── #cta-dock                 → botões Tour / Entorno / Contato
+├── #cta-dock                 → botões Tour / Entorno
 ├── #map-modal                → modal "Entorno" (mini-mapa SVG + lista de POIs filtráveis)
 ├── #pano-modal                → modal 360° (Three.js WebGL)
 ├── #poi-card                  → card global de POI (posicionado via JS)
-├── #bot-popup                 → assistente/bot com CTA WhatsApp
 └── #lead-modal                → formulário de agendamento de visita
 ```
 
@@ -123,14 +121,13 @@ Funções principais (sem export, escopo global do script):
 | `startTour()` / `stopTour()` | Tour automático (avança cenas sozinho) — acionado pelo botão `#cta-tour` |
 | `initCTA()` | Liga os botões do `#cta-dock`, abre `#lead-modal` |
 | `initCursor()` | Cursor customizado desktop (`#cursor`/`#ring`) |
-| `initBotPopup()` | Popup do assistente — abre com delay inicial (6s) e ciclo (15s); **guard**: não abre se `#map-modal` ou `#pano-modal` estiverem abertos (`isMapOpen()`) |
 
 ---
 
 ## Funcionalidades inline em `bidese.html`
 
 ### Top bar (`#top-bar`)
-Barra fixa no topo: botão voltar (`#top-back` → `index.html`), label "LEMME · BIDESE", botão de filtros (`#filter-toggle`) com indicador `.fi-dot` (visível quando há filtro ativo via classe `.has-active`).
+Barra fixa no topo: label "LEMME · BIDESE", botão de filtros (`#filter-toggle`) com indicador `.fi-dot` (visível quando há filtro ativo via classe `.has-active`).
 
 ### Filtros de Unidade (`#filter-panel`)
 - Grupos: **Disponibilidade** (`disponivel`/`reservado`/`vendido` — cores verde/amarelo/vermelho via classes `.avail-*`), **Quartos** (1–3), **Banheiros** (1–2), **Área útil** (slider `40–200 m²`)
@@ -145,6 +142,7 @@ Barra fixa no topo: botão voltar (`#top-back` → `index.html`), label "LEMME �
 - `buildFloorSVG()` — desenha os polígonos (`<polygon class="floor-poly">`) + labels sobre `#floor-svg`; clique abre `openFloorPanel(id)`
 - `openFloorPanel(id)` / `closeFloorPanel()` — drawer lateral direito (`#floor-panel`) com tipologia, área, vagas, suítes, status, descrição e botão de download de PDF da planta (`#fl-pdf-btn`)
 - Overlay só é visível/interativo na cena `aerial` (classe `.visible` em `#floor-svg`)
+- Overlays começam **desligados** (`_floorOverlayOn = false`). Na cena `aerial`, a engrenagem `#floor-cta` (canto inferior direito, sutil) liga/desliga overlays + seleção — fica dourada (`.active`) quando ligada; o botão `#cta-overlay` do dock alterna o mesmo estado. `setFloorCtaVisible(v)` mostra/esconde a engrenagem (escondida durante transições e fora da Vista 1)
 
 ### Editor de Overlays (`#ov-edit-btn` / `#ov-export-panel`)
 Ferramenta de desenvolvimento para reposicionar os vértices dos polígonos de `FLOOR_DATA` visualmente:
@@ -174,18 +172,13 @@ Ferramenta de desenvolvimento para reposicionar os vértices dos polígonos de `
 - Drag/pinch/scroll para navegar; inércia (fator `0.88`)
 - `closePanoModal()` — fecha via backdrop click, botão X ou Escape
 
-### Bot / Assistente (`#bot-popup`)
-- Abre automaticamente com delay inicial (6s) e ciclo (15s), controlado por `initBotPopup()` em `script-bidesse-main.js`
-- **Guard:** não abre se `#map-modal` ou `#pano-modal` estiverem abertos
-- CTA `#bot-wa` → WhatsApp
-
 ### Lead Capture (`#lead-modal`)
 - Formulário: Nome, E-mail, WhatsApp (`#lead-form`)
 - Acionado a partir do `#cta-dock` (fluxo de agendamento de visita)
 - Mensagem de sucesso `#lead-ok` (hidden por padrão)
 
 ### CTA Dock (`#cta-dock`)
-3 botões: `#cta-tour` (`startTour()`), `#cta-surround` (`openMapModal()`), `#cta-bot` (assistente)
+Botões: `#cta-tour` (`startTour()`), `#cta-surround` (`openMapModal()`) — o assistente (`#cta-bot` / `#bot-popup`) foi removido
 - Comportamento: ícone apenas por padrão; `.active` expande com texto via `max-width` transition
 
 ---

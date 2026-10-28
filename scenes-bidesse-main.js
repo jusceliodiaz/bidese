@@ -70,17 +70,6 @@ const CONFIG = {
   },
 
   sequences: {
-    // Barra de iluminação (dia/noite) da Vista 1 — arraste escrubbing, não
-    // autoplay. t=0 sempre mostra COVER_B1.jpg (dia); a sequência
-    // noite_00.jpg…noite_47.jpg cobre a transição até a noite fechada.
-    "aerial-daynight": {
-      folder: "images/bidesse/",
-      prefix: "noite_",
-      from: 0,
-      to: 47,
-      pad: 2,
-      ext: "jpg",
-    },
     "aerial-to-pool": {
       folder: "images/bidesse/",
       folder_m: "images/bidesse/seq_arch_m/",
