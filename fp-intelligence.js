@@ -20,7 +20,8 @@
   const FAST = params.get("fpai") === "fast"; // testes: timers curtos
 
   const CFG = {
-    endpoint: null, // ex.: "/api/events" — envelope do plano (seção 4.2)
+    // envelope do plano (seção 4.2) → api/events.js; em file:// não há servidor
+    endpoint: /^https?:$/.test(location.protocol) ? "/api/events" : null,
     policy: "rules-v1",
     catalogVersion: "lemme-2026-10-v1",
     halfLifeDays: 7,

@@ -851,21 +851,53 @@ function initCTA() {
       data.scene   = currentScene;
       // contexto do percurso FirstPerson — só se a pessoa deixou a caixa marcada
       if (window.FPAI) Object.assign(data, FPAI.leadContext());
+
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const errEl = leadError(e.target);
+      errEl.hidden = true;
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.dataset.label ??= submitBtn.textContent; submitBtn.textContent = 'Enviando…'; }
+
+      let ok = false;
       try {
-        await fetch(LEAD.endpoint, {
+        const r = await fetch(LEAD.endpoint, {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify(data),
         });
+        ok = r.ok;
       } catch (_) {}
+
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.label; }
+      if (!ok) {
+        // não fingir sucesso: o lead não chegou — oferece o WhatsApp
+        errEl.hidden = false;
+        track('lead_error', { scene: currentScene });
+        return;
+      }
+
       // analytics sem dados de contato (nome, e-mail, telefone ficam só no lead)
-      track('lead_submit', { scene: currentScene, tipologia: data.tipologia || '' });
+      track('lead_submit', { scene: currentScene, tipologia: data.interesse || '' });
       window.FPAI?.track('contact_requested', null, { scene: currentScene });
       e.target.hidden = true;
-      const ok = document.getElementById('lead-ok');
-      if (ok) ok.hidden = false;
+      const okEl = document.getElementById('lead-ok');
+      if (okEl) okEl.hidden = false;
     });
   }
+}
+
+// Mensagem de erro do lead com alternativa pelo WhatsApp (criada sob demanda)
+function leadError(form) {
+  let el = document.getElementById('lead-err');
+  if (el) return el;
+  el = document.createElement('p');
+  el.id = 'lead-err';
+  el.setAttribute('role', 'alert');
+  el.hidden = true;
+  const wa = `https://wa.me/${LEAD.whatsapp}?text=` +
+    encodeURIComponent(`Olá! Quero agendar uma visita ao decorado do ${LEAD.project}.`);
+  el.innerHTML = `Não conseguimos enviar agora. <a href="${wa}" target="_blank" rel="noopener">Fale pelo WhatsApp</a> ou tente de novo.`;
+  form.appendChild(el);
+  return el;
 }
 
 // ─── Debug mode (press D) ─────────────────────────────────────────────────────

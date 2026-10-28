@@ -3620,6 +3620,8 @@
         </p>
         <form id="lead-form">
           <input name="nome" type="text" placeholder="Nome" required />
+          <!-- honeypot anti-robô: invisível para pessoas -->
+          <input class="lead-hp" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
           <input name="email" type="email" placeholder="E-mail" required />
           <input name="fone" type="tel" placeholder="WhatsApp" required />
           <select

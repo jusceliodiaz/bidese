@@ -1,0 +1,11 @@
+# Segredos — nunca versionar (só o .env.example vai para o git)
+.env
+.env.*
+!.env.example
+
+# Vercel / Supabase CLI / Node
+.vercel
+supabase/.temp
+supabase/.branches
+node_modules
+.DS_Store

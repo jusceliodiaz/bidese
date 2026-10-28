@@ -747,6 +747,31 @@ input[type="range"].fi-slider:focus-visible::-webkit-slider-thumb {
 
 /* -------------------------------------------------------- Agendar visita */
 
+.lead-hp {
+  position: absolute !important;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+#lead-err {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--warn);
+}
+
+#lead-err a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+#lead-form button[disabled] {
+  opacity: 0.7;
+  cursor: wait;
+}
+
 #lead-modal {
   background: rgba(0, 0, 0, 0.35);
 }
